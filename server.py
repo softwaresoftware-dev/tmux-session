@@ -19,7 +19,7 @@ def create_session(name: str, command: str) -> dict:
         {"session": name, "created": bool, "error": str | None}
     """
     result = subprocess.run(
-        ["tmux", "new-session", "-d", "-s", name, f"bash -lc '{command}'"],
+        ["tmux", "new-session", "-d", "-s", name, command],
         capture_output=True,
         text=True,
     )
