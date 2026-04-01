@@ -90,3 +90,44 @@ def test_capture_output_failure(mock_run):
     result = server.capture_output("ghost")
     assert result["output"] is None
     assert "no session" in result["error"]
+
+
+# --- show_session ---
+
+@patch("server._yakuake_available", return_value=True)
+@patch("server._qdbus")
+def test_show_session_yakuake(mock_qdbus, mock_avail):
+    mock_qdbus.side_effect = [
+        _mock_run(stdout="30\n"),      # addSession
+        _mock_run(stdout="45\n"),      # terminalIdsForSessionId
+        _mock_run(),                    # setTabTitle
+        _mock_run(),                    # runCommandInTerminal
+        _mock_run(),                    # raiseSession
+    ]
+    result = server.show_session("my-session", "My Title")
+    assert result["displayed"] is True
+    assert result["backend"] == "yakuake"
+    assert result["yakuake_session"] == "30"
+
+
+@patch("server._yakuake_available", return_value=False)
+def test_show_session_fallback(mock_avail):
+    result = server.show_session("my-session")
+    assert result["displayed"] is False
+    assert "tmux attach" in result["error"]
+
+
+# --- close_display ---
+
+@patch("server._yakuake_available", return_value=True)
+@patch("server._qdbus")
+def test_close_display(mock_qdbus, mock_avail):
+    mock_qdbus.return_value = _mock_run()
+    result = server.close_display("30")
+    assert result["closed"] is True
+
+
+@patch("server._yakuake_available", return_value=False)
+def test_close_display_no_yakuake(mock_avail):
+    result = server.close_display("30")
+    assert result["closed"] is False

@@ -1,5 +1,6 @@
 """MCP server for tmux-session — terminal session management via tmux."""
 
+import shutil
 import subprocess
 
 from mcp.server.fastmcp import FastMCP
@@ -106,6 +107,73 @@ def capture_output(session: str, lines: int = 50) -> dict:
     if result.returncode != 0:
         return {"session": session, "output": None, "error": result.stderr.strip()}
     return {"session": session, "output": result.stdout, "error": None}
+
+
+def _qdbus(*args) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["qdbus", "org.kde.yakuake", *args],
+        capture_output=True, text=True, timeout=5,
+    )
+
+
+def _yakuake_available() -> bool:
+    if not shutil.which("qdbus"):
+        return False
+    return _qdbus("/yakuake/sessions", "org.kde.yakuake.activeSessionId").returncode == 0
+
+
+@mcp.tool()
+def show_session(session: str, title: str = "") -> dict:
+    """Show a tmux session in a visible terminal tab.
+
+    Opens the session in Yakuake if available, otherwise returns
+    the manual attach command.
+
+    Args:
+        session: tmux session name to display.
+        title: Tab title (defaults to session name).
+
+    Returns:
+        {"session": str, "displayed": bool, "backend": str | None, "error": str | None}
+    """
+    if not title:
+        title = session
+
+    if _yakuake_available():
+        result = _qdbus("/yakuake/sessions", "org.kde.yakuake.addSession")
+        if result.returncode != 0:
+            return {"session": session, "displayed": False, "backend": "yakuake", "error": result.stderr.strip()}
+
+        yak_session = result.stdout.strip()
+        term_result = _qdbus("/yakuake/sessions", "org.kde.yakuake.terminalIdsForSessionId", yak_session)
+        term_id = term_result.stdout.strip().split(",")[0]
+
+        _qdbus("/yakuake/tabs", "org.kde.yakuake.setTabTitle", yak_session, title)
+        _qdbus("/yakuake/sessions", "org.kde.yakuake.runCommandInTerminal", term_id, f"tmux attach -t {session}")
+        _qdbus("/yakuake/sessions", "org.kde.yakuake.raiseSession", yak_session)
+
+        return {"session": session, "displayed": True, "backend": "yakuake", "yakuake_session": yak_session, "error": None}
+
+    return {"session": session, "displayed": False, "backend": None, "error": f"No display backend available. Attach manually: tmux attach -t {session}"}
+
+
+@mcp.tool()
+def close_display(yakuake_session: str) -> dict:
+    """Close a previously opened display tab.
+
+    Args:
+        yakuake_session: The Yakuake session ID returned by show_session.
+
+    Returns:
+        {"closed": bool, "error": str | None}
+    """
+    if not _yakuake_available():
+        return {"closed": False, "error": "Yakuake not available"}
+
+    result = _qdbus("/yakuake/sessions", "org.kde.yakuake.removeSession", yakuake_session)
+    if result.returncode != 0:
+        return {"closed": False, "error": result.stderr.strip()}
+    return {"closed": True, "error": None}
 
 
 if __name__ == "__main__":

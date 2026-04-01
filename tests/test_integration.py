@@ -78,3 +78,23 @@ def test_capture_nonexistent():
     result = server.capture_output("nonexistent-session-xyz")
     assert result["output"] is None
     assert result["error"]
+
+
+@pytest.mark.skipif(
+    not server._yakuake_available(),
+    reason="Yakuake not running"
+)
+class TestShowSession:
+
+    def test_show_and_close(self):
+        server.create_session(SESSION, "echo visible_test; sleep 30")
+        time.sleep(0.5)
+
+        result = server.show_session(SESSION, "Integration Test")
+        assert result["displayed"] is True
+        assert result["backend"] == "yakuake"
+
+        time.sleep(1)
+
+        close = server.close_display(result["yakuake_session"])
+        assert close["closed"] is True
