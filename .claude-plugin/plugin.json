@@ -1,0 +1,19 @@
+{
+  "name": "tmux-session",
+  "description": "Terminal session management via tmux — create, monitor, and control detached terminal sessions",
+  "version": "1.0.0",
+  "author": {
+    "name": "Thatcher",
+    "url": "https://github.com/ThatcherT"
+  },
+  "repository": "https://github.com/ThatcherT/tmux-session",
+  "license": "MIT",
+  "keywords": ["tmux", "terminal", "session", "provider"],
+  "mcpServers": {
+    "tmux-session": {
+      "command": "python",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server.py"],
+      "cwd": "${CLAUDE_PLUGIN_ROOT}"
+    }
+  }
+}
