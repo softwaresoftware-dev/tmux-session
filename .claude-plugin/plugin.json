@@ -7,12 +7,19 @@
     "url": "https://github.com/ThatcherT"
   },
   "repository": "https://github.com/ThatcherT/tmux-session",
-  "license": "MIT",
-  "keywords": ["tmux", "terminal", "session", "provider"],
+  "license": "Proprietary",
+  "keywords": [
+    "tmux",
+    "terminal",
+    "session",
+    "provider"
+  ],
   "mcpServers": {
     "tmux-session": {
       "command": "python",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/server.py"],
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/server.py"
+      ],
       "cwd": "${CLAUDE_PLUGIN_ROOT}"
     }
   }
