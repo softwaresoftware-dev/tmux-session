@@ -1,0 +1,13 @@
+[project]
+name = "tmux-session"
+version = "1.0.1"
+description = "Terminal session management via tmux"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.0,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]

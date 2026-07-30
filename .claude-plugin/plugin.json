@@ -1,7 +1,7 @@
 {
   "name": "tmux-session",
   "description": "Terminal session management via tmux \u2014 create, monitor, and control detached terminal sessions",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "NOV LLC",
     "url": "https://github.com/softwaresoftware-dev"
@@ -15,9 +15,13 @@
   ],
   "mcpServers": {
     "tmux-session": {
-      "command": "python",
+      "command": "uv",
       "args": [
-        "${CLAUDE_PLUGIN_ROOT}/server.py"
+        "run",
+        "--directory",
+        "${CLAUDE_PLUGIN_ROOT}",
+        "python",
+        "server.py"
       ],
       "cwd": "${CLAUDE_PLUGIN_ROOT}"
     }

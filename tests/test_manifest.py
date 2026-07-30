@@ -20,7 +20,7 @@ def test_mcp_server_config(manifest):
     servers = manifest["mcpServers"]
     assert "tmux-session" in servers
     server = servers["tmux-session"]
-    assert server["command"] == "python"
+    assert server["command"] == "uv"
     assert any("server.py" in arg for arg in server["args"])
 
 
